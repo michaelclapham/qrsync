@@ -38,7 +38,7 @@ func getOrCreateClient(id string) Client {
 	return client
 }
 
-func clientHandler(w http.ResponseWriter, r *http.Request) {
+func addClientHandler(w http.ResponseWriter, r *http.Request) {
 	urlParts := strings.Split(r.URL.Path, "/")
 	clientID := urlParts[len(urlParts)-1]
 	client := getOrCreateClient(clientID)
@@ -65,6 +65,7 @@ func randomNumber() int {
 }
 
 var domain = flag.String("domain", "localhost", "Domain name for links")
+var port = flag.Int("port", 80, "Port to run server on")
 
 func qrHandler(w http.ResponseWriter, r *http.Request) {
 	var png []byte
@@ -85,9 +86,11 @@ func main() {
 	flag.Parse()
 	fmt.Printf("Domain for links is %v \n", *domain)
 	clientMap = make(map[string]Client)
-	http.HandleFunc("/client/", clientHandler)
+	fileServer := http.FileServer(http.Dir("../client"))
+	http.Handle("/", fileServer)
+	http.HandleFunc("/client/", addClientHandler)
 	http.HandleFunc("/qr", qrHandler)
 	http.HandleFunc("/clients", clientListHandler)
-	fmt.Println("Starting http server on port 8080")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	fmt.Println("Starting http server on port ", *port)
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", *port), nil))
 }
