@@ -1,4 +1,4 @@
-# qrsync
+# qrsync ![goReportCard](https://goreportcard.com/badge/github.com/michaelclapham/qrsync)
 A way of syncing web clients using your phone
 
 ## Server Instructions
