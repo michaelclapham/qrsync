@@ -3,8 +3,10 @@ A way of syncing web clients using your phone
 
 ## Server Instructions
 Download and setup the Go programming language then:
+```console
 cd qrsync/server
 go run qrsync-server
+```
 
 Now go to localhost:8080/qr to get a QR code
 
@@ -13,5 +15,12 @@ go run qrsync-server -domain example.org
 
 This will still run on localhost, but your links will use the domain
 
-## Client Intructions
+## Client Instructions
+The client is written in typescript and uses no dependencies so to make changes simply run
+```console
+cd client
+tsc -w
+```
+
+## Admin Intructions
 Coming soon

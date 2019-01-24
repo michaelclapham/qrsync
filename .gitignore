@@ -10,3 +10,6 @@
 
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
+
+# Client is written in Typescript. So no .js files
+client/**/*.js

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -38,14 +39,30 @@ func getOrCreateClient(id string) Client {
 	return client
 }
 
-func addClientHandler(w http.ResponseWriter, r *http.Request) {
+func clientHandler(w http.ResponseWriter, r *http.Request) {
 	urlParts := strings.Split(r.URL.Path, "/")
 	clientID := urlParts[len(urlParts)-1]
 	client := getOrCreateClient(clientID)
-	fmt.Fprintf(w, "Hello client id %s!\n", client.ID)
-	fmt.Fprintf(w, "Your path is %s\n", r.URL.Path)
-	for id, client := range clientMap {
-		fmt.Fprintf(w, "Other client %s %s \n", id, client.Name)
+
+	// If POST modify client
+	if r.Method == "POST" {
+		decoder := json.NewDecoder(r.Body)
+		var nClient Client
+		err := decoder.Decode(&nClient)
+		if err != nil {
+			w.WriteHeader(500)
+			fmt.Fprint(w, "{ \"error\": \"error marshalling json\"}")
+		} else {
+			w.WriteHeader(200)
+			fmt.Fprint(w, "{ \"success\": \"added new client\"}")
+		}
+	} else {
+		jsonBytes, err := json.Marshal(client)
+		if err != nil {
+			fmt.Fprint(w, "{ \"error\": \"error marshalling json\"}")
+		} else {
+			w.Write(jsonBytes)
+		}
 	}
 }
 
@@ -82,14 +99,38 @@ func qrHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(png)
 }
 
+func createBlankClientHandler(w http.ResponseWriter, r *http.Request) {
+	var png []byte
+	clientID := "c" + fmt.Sprint(randomNumber())
+	link := fmt.Sprintf("http://%v:8080/client/c%v", *domain, clientID)
+	fmt.Println(link)
+	png, qrError := qrcode.Encode(link, qrcode.Medium, 256)
+	if qrError != nil {
+		w.WriteHeader(500)
+		fmt.Fprint(w, "Error generating QR code")
+		log.Println("Error generating QR code")
+		log.Println(qrError.Error())
+	}
+	base64Png := base64.StdEncoding.EncodeToString(png)
+	res := struct {
+		ID string `json:"id"`
+		Qr string `json:"qr"`
+	}{
+		clientID,
+		base64Png,
+	}
+	jsonBytes, _ := json.MarshalIndent(res, "", "    ")
+	w.Write(jsonBytes)
+}
+
 func main() {
 	flag.Parse()
 	fmt.Printf("Domain for links is %v \n", *domain)
 	clientMap = make(map[string]Client)
 	fileServer := http.FileServer(http.Dir("../client"))
 	http.Handle("/", fileServer)
-	http.HandleFunc("/client/", addClientHandler)
-	http.HandleFunc("/qr", qrHandler)
+	http.HandleFunc("/newclient", createBlankClientHandler)
+	http.HandleFunc("/client/", clientHandler)
 	http.HandleFunc("/clients", clientListHandler)
 	fmt.Println("Starting http server on port ", *port)
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", *port), nil))
