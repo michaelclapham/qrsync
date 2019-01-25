@@ -16,8 +16,9 @@ import (
 
 // Client representation
 type Client struct {
-	ID   string
-	Name string
+	ID   string `json:"id"`
+	QR   string `json:"qr"`
+	Name string `json:"name"`
 }
 
 var clientMap map[string]Client
@@ -26,6 +27,7 @@ var clientMap map[string]Client
 func newClient(id string) Client {
 	c := new(Client)
 	c.ID = id
+	c.QR = ""
 	c.Name = fmt.Sprintf("unnamed client %d", len(clientMap)+1)
 	return *c
 }
@@ -42,27 +44,26 @@ func getOrCreateClient(id string) Client {
 func clientHandler(w http.ResponseWriter, r *http.Request) {
 	urlParts := strings.Split(r.URL.Path, "/")
 	clientID := urlParts[len(urlParts)-1]
-	client := getOrCreateClient(clientID)
 
 	// If POST modify client
 	if r.Method == "POST" {
 		decoder := json.NewDecoder(r.Body)
-		var nClient Client
-		err := decoder.Decode(&nClient)
+		var inputClient Client
+		err := decoder.Decode(&inputClient)
 		if err != nil {
 			w.WriteHeader(500)
-			fmt.Fprint(w, "{ \"error\": \"error marshalling json\"}")
-		} else {
-			w.WriteHeader(200)
-			fmt.Fprint(w, "{ \"success\": \"added new client\"}")
+			fmt.Fprint(w, "{ \"error\": \"error in input\"}")
 		}
+		clientMap[clientID] = inputClient
+	}
+
+	// Always return client
+	jsonBytes, err := json.Marshal(clientMap[clientID])
+	if err != nil {
+		w.WriteHeader(500)
+		fmt.Fprint(w, err.Error())
 	} else {
-		jsonBytes, err := json.Marshal(client)
-		if err != nil {
-			fmt.Fprint(w, "{ \"error\": \"error marshalling json\"}")
-		} else {
-			w.Write(jsonBytes)
-		}
+		w.Write(jsonBytes)
 	}
 }
 
@@ -112,12 +113,10 @@ func createBlankClientHandler(w http.ResponseWriter, r *http.Request) {
 		log.Println(qrError.Error())
 	}
 	base64Png := base64.StdEncoding.EncodeToString(png)
-	res := struct {
-		ID string `json:"id"`
-		Qr string `json:"qr"`
-	}{
+	res := Client{
 		clientID,
 		base64Png,
+		"",
 	}
 	jsonBytes, _ := json.MarshalIndent(res, "", "    ")
 	w.Write(jsonBytes)
