@@ -83,27 +83,12 @@ func randomNumber() int {
 }
 
 var domain = flag.String("domain", "localhost", "Domain name for links")
-var port = flag.Int("port", 80, "Port to run server on")
-
-func qrHandler(w http.ResponseWriter, r *http.Request) {
-	var png []byte
-	clientID := "c" + fmt.Sprint(randomNumber())
-	link := fmt.Sprintf("http://%v:8080/client/c%v", *domain, clientID)
-	fmt.Println(link)
-	png, err := qrcode.Encode(link, qrcode.Medium, 256)
-	if err != nil {
-		log.Println("Error generating QR code")
-		log.Println(err.Error())
-	}
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Content-Type", "image/png")
-	w.Write(png)
-}
+var port = flag.Int("port", 443, "Port to run server on")
 
 func createBlankClientHandler(w http.ResponseWriter, r *http.Request) {
 	var png []byte
 	clientID := "c" + fmt.Sprint(randomNumber())
-	link := fmt.Sprintf("http://%v:8080/client/c%v", *domain, clientID)
+	link := fmt.Sprint(clientID)
 	fmt.Println(link)
 	png, qrError := qrcode.Encode(link, qrcode.Medium, 256)
 	if qrError != nil {
@@ -126,11 +111,11 @@ func main() {
 	flag.Parse()
 	fmt.Printf("Domain for links is %v \n", *domain)
 	clientMap = make(map[string]Client)
-	fileServer := http.FileServer(http.Dir("../client"))
+	fileServer := http.FileServer(http.Dir("../web"))
 	http.Handle("/", fileServer)
-	http.HandleFunc("/newclient", createBlankClientHandler)
-	http.HandleFunc("/client/", clientHandler)
-	http.HandleFunc("/clients", clientListHandler)
-	fmt.Println("Starting http server on port ", *port)
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", *port), nil))
+	http.HandleFunc("/api/newclient", createBlankClientHandler)
+	http.HandleFunc("/api/client/", clientHandler)
+	http.HandleFunc("/api/clients", clientListHandler)
+	fmt.Println("Starting https server on port ", *port)
+	log.Fatal(http.ListenAndServeTLS(fmt.Sprintf(":%d", *port), "ssl/server.crt", "ssl/server.key", nil))
 }

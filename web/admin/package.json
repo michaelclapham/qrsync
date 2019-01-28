@@ -1,0 +1,12 @@
+{
+    "name": "qrsync-admin-web",
+    "author": {
+        "name": "Michael Clapham"
+    },
+    "scripts": {},
+    "version": "0.1.0",
+    "devDependencies": {
+        "zxing-typescript": "0.1.2",
+        "typescript": "3.2.4"
+    }
+}

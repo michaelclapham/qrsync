@@ -21,6 +21,14 @@ The client is written in typescript and uses no dependencies so to make changes 
 cd client
 tsc -w
 ```
+The client web UI is served by the main go server
 
-## Admin Intructions
-Coming soon
+## Web Admin Intructions
+Copy ZXing minified js from: https://github.com/aleris/zxing-typescript/blob/master/docs/examples/zxing.qrcodereader.min.js to ./web/admin/lib
+Admin web project is written in Typescript (version included in package.json) so run
+```console
+npm install --save-dev
+tsc -w
+```
+To start compiling web admin in watch mode.
+The admin web UI is served by the main go server

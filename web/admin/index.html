@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>QR Sync Admin</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        h1,
+        h2 {
+            text-align: center;
+            font-family: sans-serif;
+            font-weight: lighter;
+        }
+        input {
+            font-size: 30px;
+            text-align: center;
+            font-family: sans-serif;
+            font-weight: lighter;
+        }
+    </style>
+    <script type="text/javascript" src="./lib/zxing.qrcodereader.min.js"></script>
+</head>
+<body>
+    <h1>QR Sync Admin</h1>
+    <h2>Scan a client QR code to administer it from this device</h2>
+    <video autoplay id="videoElement"></video>
+    <p id="outputText"></p>
+    <ul id="clientList"></ul>
+    <script src="main.js"></script>
+</body>
+</html>

@@ -11,5 +11,12 @@
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
 
-# Client is written in Typescript. So no .js files
-client/**/*.js
+# Web Client and Admin UI is written in Typescript. So no .js files
+web/**/*.js
+node_modules
+
+# Certificates will be generated on production install / are different on each local dev machine
+*.crt
+
+# Never check in private keys!
+*.key

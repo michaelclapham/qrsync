@@ -15,7 +15,7 @@ function getQRCode() {
             setupNameInput();
         }
     };
-    xhttp.open("GET", "/newclient", true);
+    xhttp.open("GET", "/api/newclient", true);
     xhttp.send();
 }
 
@@ -29,7 +29,7 @@ function setupNameInput() {
         if (client.name && client.name.length > 0) {
             debounceTimeout = setTimeout(() => {
                 var xhttp = new XMLHttpRequest();
-                xhttp.open("POST", `/client/${client.id}`, true);
+                xhttp.open("POST", `/api/client/${client.id}`, true);
                 xhttp.send(JSON.stringify(client));
             }, 1000);
         }
