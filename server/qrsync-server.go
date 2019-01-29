@@ -74,7 +74,6 @@ func clientListHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		w.Write(jsonBytes)
 	}
-
 }
 
 func randomNumber() int {
@@ -85,7 +84,8 @@ func randomNumber() int {
 var domain = flag.String("domain", "localhost", "Domain name for links")
 var port = flag.Int("port", 443, "Port to run server on")
 
-func createBlankClientHandler(w http.ResponseWriter, r *http.Request) {
+// Handles a request to create a new client with a corresponding QR code containing the clients ID
+func CreateClientHandler(w http.ResponseWriter, r *http.Request) {
 	var png []byte
 	clientID := "c" + fmt.Sprint(randomNumber())
 	link := fmt.Sprint(clientID)
@@ -113,7 +113,7 @@ func main() {
 	clientMap = make(map[string]Client)
 	fileServer := http.FileServer(http.Dir("../web"))
 	http.Handle("/", fileServer)
-	http.HandleFunc("/api/newclient", createBlankClientHandler)
+	http.HandleFunc("/api/newclient", CreateClientHandler)
 	http.HandleFunc("/api/client/", clientHandler)
 	http.HandleFunc("/api/clients", clientListHandler)
 	fmt.Println("Starting https server on port ", *port)

@@ -8,13 +8,9 @@ type Client = {
 };
 
 var clientList: Client[] = [];
-
 var videoElement = document.getElementById("videoElement") as HTMLVideoElement;
-
 var outputText = document.getElementById("outputText") as HTMLParagraphElement;
-
 var clientListElement = document.getElementById("clientList") as HTMLUListElement;
-
 const codeReader = new ZXing.BrowserQRCodeReader();
 
 function tryScan() {
@@ -48,17 +44,3 @@ function updateClientListElement() {
 }
 
 tryScan();
-
-
-// HTML5 Code
-/* if (navigator.mediaDevices.getUserMedia) {
-    navigator.mediaDevices.getUserMedia({ video: true })
-        .then(function (stream) {
-            videoElement.srcObject = stream;
-            
-            codeReader.decodeFromVideoSource(stream.)
-        })
-        .catch(function (err0r) {
-            console.log("Something went wrong!");
-        });
-} */
