@@ -1,5 +1,7 @@
 # qrsync ![goReportCard](https://goreportcard.com/badge/github.com/michaelclapham/qrsync)
 A way of syncing web clients using your phone
+Launch an admin device on a phone (or any device with a camera), then launch clients in web browsers you wish to control.
+Enter the URL you'd like your clients to go to in the admin UI, then scan the QR code in each clients web browser for it to redirect to it.
 
 ## Server Instructions
 Download and setup the Go programming language then:
@@ -8,12 +10,15 @@ cd qrsync/server
 go run qrsync-server
 ```
 
-Now go to localhost:8080/qr to get a QR code
+Install openssl and use commands in gen_ssl.ps1 (syntax is the same as bash) to generate server.crt and server.key
+
+Now go to https://localhost/client to client with new QR code
+and go to https://localhost/
 
 To run on a different domain use
-go run qrsync-server -domain example.org
+go run qrsync-server
 
-This will still run on localhost, but your links will use the domain
+Server must be running on HTTPS for WebRTC (video capture for QR codes) to work.
 
 ## Client Instructions
 The client is written in typescript and uses no dependencies so to make changes simply run

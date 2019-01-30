@@ -16,30 +16,13 @@ import (
 
 // Client representation
 type Client struct {
-	ID   string `json:"id"`
-	QR   string `json:"qr"`
-	Name string `json:"name"`
+	ID      string `json:"id"`
+	QR      string `json:"qr"`
+	Name    string `json:"name"`
+	GoToURL string `json:"gotoUrl"`
 }
 
 var clientMap map[string]Client
-
-// NewClient Creates new Client
-func newClient(id string) Client {
-	c := new(Client)
-	c.ID = id
-	c.QR = ""
-	c.Name = fmt.Sprintf("unnamed client %d", len(clientMap)+1)
-	return *c
-}
-
-func getOrCreateClient(id string) Client {
-	client, ok := clientMap[id]
-	if !ok {
-		client = newClient(id)
-		clientMap[id] = client
-	}
-	return client
-}
 
 func clientHandler(w http.ResponseWriter, r *http.Request) {
 	urlParts := strings.Split(r.URL.Path, "/")
@@ -68,6 +51,20 @@ func clientHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func clientListHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "POST" {
+		decoder := json.NewDecoder(r.Body)
+		var updatedClients []Client
+		err := decoder.Decode(&updatedClients)
+		if err != nil {
+			fmt.Fprint(w, "{ \"error\": \"error decoding json\"}")
+		} else {
+			for _, client := range updatedClients {
+				clientMap[client.ID] = client
+			}
+		}
+
+	}
+
 	jsonBytes, err := json.Marshal(clientMap)
 	if err != nil {
 		fmt.Fprint(w, "{ \"error\": \"error marshalling json\"}")
@@ -102,7 +99,9 @@ func CreateClientHandler(w http.ResponseWriter, r *http.Request) {
 		clientID,
 		base64Png,
 		"",
+		"",
 	}
+	clientMap[clientID] = res
 	jsonBytes, _ := json.MarshalIndent(res, "", "    ")
 	w.Write(jsonBytes)
 }
