@@ -24,7 +24,7 @@ type Client struct {
 
 var clientMap map[string]Client
 
-func clientHandler(w http.ResponseWriter, r *http.Request) {
+func ClientHandler(w http.ResponseWriter, r *http.Request) {
 	urlParts := strings.Split(r.URL.Path, "/")
 	clientID := urlParts[len(urlParts)-1]
 
@@ -113,7 +113,7 @@ func main() {
 	fileServer := http.FileServer(http.Dir("../web"))
 	http.Handle("/", fileServer)
 	http.HandleFunc("/api/newclient", CreateClientHandler)
-	http.HandleFunc("/api/client/", clientHandler)
+	http.HandleFunc("/api/client/", ClientHandler)
 	http.HandleFunc("/api/clients", clientListHandler)
 	fmt.Println("Starting https server on port ", *port)
 	log.Fatal(http.ListenAndServeTLS(fmt.Sprintf(":%d", *port), "ssl/server.crt", "ssl/server.key", nil))
