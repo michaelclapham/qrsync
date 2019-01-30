@@ -7,7 +7,7 @@ type Client = {
 
 var client: Client;
 
-function createClientOnServer(callback: (client: Client) => any) {
+function getClientFromServer(isNew: boolean, callback: (client: Client) => any) {
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function () {
         if (this.readyState == 4 && this.status == 200) {
@@ -15,24 +15,12 @@ function createClientOnServer(callback: (client: Client) => any) {
             callback(client);
         }
     };
-    xhttp.open("GET", "/api/newclient", true);
-    xhttp.send();
-}
-
-function getClientFromServer(callback: (client: Client) => any) {
-    var xhttp = new XMLHttpRequest();
-    xhttp.onreadystatechange = function () {
-        if (this.readyState == 4 && this.status == 200) {
-            var client = JSON.parse(xhttp.responseText);
-            callback(client);
-        }
-    };
-    xhttp.open("GET", "/api/client/" + client.id, true);
+    xhttp.open("GET", isNew ? "/api/newclient" : "/api/client/" + client.id, true);
     xhttp.send();
 }
 
 function getQRCode() {
-    createClientOnServer((c) => {
+    getClientFromServer(true, (c) => {
         client = c;
         document.getElementById("qr").setAttribute("src", "data:image/png;base64," + client.qr);
         setupNameInput();
@@ -60,7 +48,7 @@ function setupNameInput() {
 getQRCode();
 
 setInterval(() => {
-    getClientFromServer((c) => {
+    getClientFromServer(false, (c) => {
         var prevClient = client;
         if (c.gotoUrl && c.gotoUrl.length > 3) {
             location.href = c.gotoUrl;
