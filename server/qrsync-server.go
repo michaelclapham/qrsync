@@ -106,7 +106,7 @@ func CreateClientHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(jsonBytes)
 }
 
-func main() {
+func main2() {
 	flag.Parse()
 	fmt.Printf("Domain for links is %v \n", *domain)
 	clientMap = make(map[string]Client)
