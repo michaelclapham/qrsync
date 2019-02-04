@@ -33,6 +33,7 @@ func (a *App) Initialize() {
 	a.Router = mux.NewRouter()
 	a.ClientMap = make(map[string]Client)
 	a.MockRandom = -1
+	a.initializeRoutes()
 }
 
 func respondAndLogError(w http.ResponseWriter, errorType string, err error) {
