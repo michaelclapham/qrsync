@@ -44,3 +44,16 @@ func TestCreateClient(t *testing.T) {
 		t.Fatal("Expected client to have QR code of string: c1")
 	}
 }
+
+func TestGetClient(t *testing.T) {
+	t.Log("test create client")
+	req, _ := http.NewRequest("GET", "/client", nil)
+	createResponse := executeRequest(req)
+	req, _ = http.NewRequest("GET", "/client/c1", nil)
+	getResponse := executeRequest(req)
+	createBodyString := createResponse.Body.String()
+	getBodyString := getResponse.Body.String()
+	if createBodyString != getBodyString {
+		t.Fatal("Expected get client call to return client just created")
+	}
+}

@@ -62,13 +62,33 @@ func (a *App) createClient(w http.ResponseWriter, r *http.Request) {
 	if jsonErr != nil {
 		respondAndLogError(w, "JSON formatting error", jsonErr)
 		return
-	} else {
-		w.Write(jsonBytes)
 	}
+	w.Write(jsonBytes)
+}
+
+func (a *App) getClient(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	clientID, ok := vars["id"]
+	if !ok {
+		respondAndLogError(w, fmt.Sprint("No id provided"), nil)
+		return
+	}
+	client, ok := a.ClientMap[clientID]
+	if !ok {
+		respondAndLogError(w, fmt.Sprint("Not client with id ", clientID), nil)
+		return
+	}
+	jsonBytes, jsonErr := json.MarshalIndent(client, "", "    ")
+	if jsonErr != nil {
+		respondAndLogError(w, "JSON formatting error", jsonErr)
+		return
+	}
+	w.Write(jsonBytes)
 }
 
 func (a *App) initializeRoutes() {
 	a.Router.HandleFunc("/client", a.createClient).Methods("GET")
+	a.Router.HandleFunc("/client/{id}", a.getClient).Methods("GET")
 }
 
 // ListenOnPort Starts the app listening on the provided port
