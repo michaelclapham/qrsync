@@ -57,3 +57,19 @@ func TestGetClient(t *testing.T) {
 		t.Fatal("Expected get client call to return client just created")
 	}
 }
+
+func TestGetClients(t *testing.T) {
+	t.Log("test create client")
+	req, _ := http.NewRequest("GET", "/client", nil)
+	executeRequest(req)
+	app.MockRandom = -2
+	req, _ = http.NewRequest("GET", "/client", nil)
+	executeRequest(req)
+	req, _ = http.NewRequest("GET", "/clients", nil)
+	getResponse := executeRequest(req)
+	var actualClientMap map[string]Client
+	err := json.Unmarshal(getResponse.Body.Bytes(), &actualClientMap)
+	if err != nil {
+		t.Fatal("Error parsing client map json")
+	}
+}
