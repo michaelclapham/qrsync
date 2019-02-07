@@ -86,6 +86,29 @@ func (a *App) getClient(w http.ResponseWriter, r *http.Request) {
 	w.Write(jsonBytes)
 }
 
+func (a *App) setClient(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	clientID, ok := vars["id"]
+	if !ok {
+		respondAndLogError(w, fmt.Sprint("No id provided"), nil)
+		return
+	}
+	decoder := json.NewDecoder(r.Body)
+	var inputClient Client
+	err := decoder.Decode(&inputClient)
+	if err != nil {
+		respondAndLogError(w, "JSON parsing error", err)
+		return
+	}
+	clientMap[clientID] = inputClient
+	jsonBytes, jsonErr := json.MarshalIndent(clientMap[clientID], "", "    ")
+	if jsonErr != nil {
+		respondAndLogError(w, "JSON formatting error", jsonErr)
+		return
+	}
+	w.Write(jsonBytes)
+}
+
 func (a *App) getClients(w http.ResponseWriter, r *http.Request) {
 	jsonBytes, jsonErr := json.MarshalIndent(a.ClientMap, "", "    ")
 	if jsonErr != nil {
@@ -96,9 +119,10 @@ func (a *App) getClients(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *App) initializeRoutes() {
-	a.Router.HandleFunc("/client", a.createClient).Methods("GET")
-	a.Router.HandleFunc("/client/{id}", a.getClient).Methods("GET")
-	a.Router.HandleFunc("/clients", a.getClients).Methods("GET")
+	a.Router.HandleFunc("/api/client", a.createClient).Methods("GET")
+	a.Router.HandleFunc("/api/client/{id}", a.getClient).Methods("GET")
+	a.Router.HandleFunc("/api/client/{id}", a.setClient).Methods("POST")
+	a.Router.HandleFunc("/api/clients", a.getClients).Methods("GET")
 }
 
 // ListenOnPort Starts the app listening on the provided port

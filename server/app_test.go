@@ -28,7 +28,7 @@ func executeRequest(req *http.Request) *httptest.ResponseRecorder {
 
 func TestCreateClient(t *testing.T) {
 	t.Log("test create client")
-	req, _ := http.NewRequest("GET", "/client", nil)
+	req, _ := http.NewRequest("GET", "/api/client", nil)
 	response := executeRequest(req)
 	bodyString := response.Body.String()
 	t.Log(bodyString)
@@ -47,9 +47,9 @@ func TestCreateClient(t *testing.T) {
 
 func TestGetClient(t *testing.T) {
 	t.Log("test create client")
-	req, _ := http.NewRequest("GET", "/client", nil)
+	req, _ := http.NewRequest("GET", "/api/client", nil)
 	createResponse := executeRequest(req)
-	req, _ = http.NewRequest("GET", "/client/c1", nil)
+	req, _ = http.NewRequest("GET", "/api/client/c1", nil)
 	getResponse := executeRequest(req)
 	createBodyString := createResponse.Body.String()
 	getBodyString := getResponse.Body.String()
@@ -60,12 +60,12 @@ func TestGetClient(t *testing.T) {
 
 func TestGetClients(t *testing.T) {
 	t.Log("test create client")
-	req, _ := http.NewRequest("GET", "/client", nil)
+	req, _ := http.NewRequest("GET", "/api/client", nil)
 	executeRequest(req)
 	app.MockRandom = -2
-	req, _ = http.NewRequest("GET", "/client", nil)
+	req, _ = http.NewRequest("GET", "/api/client", nil)
 	executeRequest(req)
-	req, _ = http.NewRequest("GET", "/clients", nil)
+	req, _ = http.NewRequest("GET", "/api/clients", nil)
 	getResponse := executeRequest(req)
 	var actualClientMap map[string]Client
 	err := json.Unmarshal(getResponse.Body.Bytes(), &actualClientMap)
