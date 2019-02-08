@@ -100,8 +100,8 @@ func (a *App) setClient(w http.ResponseWriter, r *http.Request) {
 		respondAndLogError(w, "JSON parsing error", err)
 		return
 	}
-	clientMap[clientID] = inputClient
-	jsonBytes, jsonErr := json.MarshalIndent(clientMap[clientID], "", "    ")
+	a.ClientMap[clientID] = inputClient
+	jsonBytes, jsonErr := json.MarshalIndent(a.ClientMap[clientID], "", "    ")
 	if jsonErr != nil {
 		respondAndLogError(w, "JSON formatting error", jsonErr)
 		return

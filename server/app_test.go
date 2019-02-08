@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -71,5 +72,35 @@ func TestGetClients(t *testing.T) {
 	err := json.Unmarshal(getResponse.Body.Bytes(), &actualClientMap)
 	if err != nil {
 		t.Fatal("Error parsing client map json")
+	}
+}
+
+func TestSetClient(t *testing.T) {
+	t.Log("test set client")
+	client := Client{
+		ID:      "c1",
+		Name:    "Bob",
+		GoToURL: "http://scratch.mit.edu",
+		QR:      "",
+	}
+	jsonBytes, err := json.Marshal(client)
+	if err != nil {
+		t.Fatal("Failed to marshal test json")
+	}
+	req, _ := http.NewRequest("POST", "/api/client/c1", bytes.NewReader(jsonBytes))
+	setResponse := executeRequest(req)
+	var returnedClient Client
+	err = json.Unmarshal(setResponse.Body.Bytes(), &returnedClient)
+	if err != nil {
+		t.Fatal("Error parsing client map json")
+	}
+	if returnedClient != client {
+		t.Fatal("Service should return same client posted to it")
+	}
+	req, _ = http.NewRequest("GET", "/api/client/c1", nil)
+	getResponse := executeRequest(req)
+	err = json.Unmarshal(getResponse.Body.Bytes(), &returnedClient)
+	if err != nil || returnedClient != client {
+		t.Fatal("Get client service should return client that was posted")
 	}
 }
