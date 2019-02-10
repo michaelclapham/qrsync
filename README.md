@@ -7,16 +7,17 @@ Enter the URL you'd like your clients to go to in the admin UI, then scan the QR
 Download and setup the Go programming language then:
 ```console
 cd qrsync/server
-go run qrsync-server
+go build
+./server 
 ```
+(or server.exe if you're on Windows)
 
 Install openssl and use commands in gen_ssl.ps1 (syntax is the same as bash) to generate server.crt and server.key
 
-Now go to https://localhost/client to client with new QR code
-and go to https://localhost/
+Now go to https://localhost/client for each web browser you'd like to control (clients), and load up https://localhost/admin on the phone you'd like to control them from.
 
-To run on a different domain use
-go run qrsync-server
+To run on a different port use
+./server -port 7000
 
 Server must be running on HTTPS for WebRTC (video capture for QR codes) to work.
 

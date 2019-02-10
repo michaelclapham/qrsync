@@ -1,11 +1,14 @@
 package main
 
-import "flag"
+import (
+	"flag"
+	"log"
+)
 
 func main() {
-	var port = flag.Int("port", 443, "Port to run server on")
+	port := flag.Int("port", 443, "Port to run server on")
 	flag.Parse()
 	var app = App{}
-	app.Initialize()
-	app.ListenOnPort(*port)
+	app.Initialize("../web/client", "../web/admin", 1)
+	log.Fatal(app.ListenOnPort(*port))
 }

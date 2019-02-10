@@ -3,9 +3,12 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"path/filepath"
 	"testing"
 )
 
@@ -15,9 +18,10 @@ var expectedQR = "iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAMAAABrrFhUAAAABlBMVEX///8AAA
 
 func TestMain(m *testing.M) {
 	app = App{}
-	app.Initialize()
-	app.MockRandom = -1
+	os.Mkdir("./test_tmp", os.ModeDir)
+	app.Initialize("./test_tmp", "./test_tmp", -1)
 	code := m.Run()
+	os.RemoveAll("./test_tmp")
 	os.Exit(code)
 }
 
@@ -102,5 +106,39 @@ func TestSetClient(t *testing.T) {
 	err = json.Unmarshal(getResponse.Body.Bytes(), &returnedClient)
 	if err != nil || returnedClient != client {
 		t.Fatal("Get client service should return client that was posted")
+	}
+}
+
+func TestServeWebIndex(t *testing.T) {
+	expectedBodyString := "<html><body>Hi</body></html>"
+	ioutil.WriteFile(filepath.Join("./test_tmp", "index.html"), []byte(expectedBodyString), os.ModePerm)
+	prefixes := []string{"/client", "/admin"}
+	for _, prefix := range prefixes {
+		req, _ := http.NewRequest("GET", prefix, nil)
+		getResponse := executeRequest(req)
+		redirectLocation := getResponse.HeaderMap["Location"][0]
+		if getResponse.Code != 301 || redirectLocation != fmt.Sprint(prefix, "/") {
+			t.Fatal("Failed to redirect to correct location for prefix ", prefix)
+		}
+		req, _ = http.NewRequest("GET", redirectLocation, nil)
+		getResponse = executeRequest(req)
+		bodyString := getResponse.Body.String()
+		if bodyString != expectedBodyString {
+			t.Fatal("Failed to serve index.html for redirect location ", redirectLocation)
+		}
+	}
+}
+
+func TestServeWebFile(t *testing.T) {
+	expectedBodyString := "function() { console.log(5) }"
+	ioutil.WriteFile(filepath.Join("./test_tmp", "main.js"), []byte(expectedBodyString), os.ModePerm)
+	prefixes := []string{"/client", "/admin"}
+	for _, prefix := range prefixes {
+		req, _ := http.NewRequest("GET", fmt.Sprint(prefix, "/main.js"), nil)
+		getResponse := executeRequest(req)
+		bodyString := getResponse.Body.String()
+		if bodyString != expectedBodyString {
+			t.Fatal("Failed to return contents of file (main.js) on prefix ", prefix)
+		}
 	}
 }

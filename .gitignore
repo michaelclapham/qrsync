@@ -20,3 +20,10 @@ node_modules
 
 # Never check in private keys!
 *.key
+
+# Ignore temporary folders created by tests
+test_tmp
+
+# Ignore any file called debug
+debug.test
+debug

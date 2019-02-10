@@ -13,11 +13,21 @@ import (
 	qrcode "github.com/skip2/go-qrcode"
 )
 
+// Client representation
+type Client struct {
+	ID      string `json:"id"`
+	QR      string `json:"qr"`
+	Name    string `json:"name"`
+	GoToURL string `json:"gotoUrl"`
+}
+
 // App Stores the state of our web server
 type App struct {
-	Router     *mux.Router
-	ClientMap  map[string]Client
-	MockRandom int
+	Router       *mux.Router
+	ClientMap    map[string]Client
+	MockRandom   int
+	ClientUIPath string
+	AdminUIPath  string
 }
 
 func (a *App) randomPositiveInt() int {
@@ -29,10 +39,12 @@ func (a *App) randomPositiveInt() int {
 }
 
 // Initialize sets up the app
-func (a *App) Initialize() {
+func (a *App) Initialize(clientUIPath string, adminUIPath string, randomSeed int) {
 	a.Router = mux.NewRouter()
 	a.ClientMap = make(map[string]Client)
-	a.MockRandom = -1
+	a.MockRandom = randomSeed
+	a.ClientUIPath = clientUIPath
+	a.AdminUIPath = adminUIPath
 	a.initializeRoutes()
 }
 
@@ -118,7 +130,18 @@ func (a *App) getClients(w http.ResponseWriter, r *http.Request) {
 	w.Write(jsonBytes)
 }
 
+func (a *App) setupFileHandler(prefix string, dir string) {
+	fileServer := http.FileServer(http.Dir(dir))
+	slashOnEnd := fmt.Sprint(prefix, "/")
+	a.Router.HandleFunc(prefix, func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, slashOnEnd, 301)
+	})
+	a.Router.PathPrefix(slashOnEnd).Handler(http.StripPrefix(slashOnEnd, fileServer))
+}
+
 func (a *App) initializeRoutes() {
+	a.setupFileHandler("/client", a.ClientUIPath)
+	a.setupFileHandler("/admin", a.AdminUIPath)
 	a.Router.HandleFunc("/api/client", a.createClient).Methods("GET")
 	a.Router.HandleFunc("/api/client/{id}", a.getClient).Methods("GET")
 	a.Router.HandleFunc("/api/client/{id}", a.setClient).Methods("POST")
@@ -126,6 +149,7 @@ func (a *App) initializeRoutes() {
 }
 
 // ListenOnPort Starts the app listening on the provided port
-func (a *App) ListenOnPort(port int) {
-	log.Fatal(http.ListenAndServe(fmt.Sprint(":", port), a.Router))
+func (a *App) ListenOnPort(port int) error {
+	fmt.Println("Starting https server on port ", port)
+	return http.ListenAndServeTLS(fmt.Sprint(":", port), "ssl/server.crt", "ssl/server.key", a.Router)
 }
