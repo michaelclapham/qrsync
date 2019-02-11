@@ -79,6 +79,15 @@ func TestGetClients(t *testing.T) {
 	}
 }
 
+func TestGetNonexistantClient(t *testing.T) {
+	req, _ := http.NewRequest("GET", "/api/client/bob", nil)
+	getResponse := executeRequest(req)
+	bodyString := getResponse.Body.String()
+	if bodyString != "No client exists with id bob" {
+		t.Fatal("Expected correct error msg for nonexistant client")
+	}
+}
+
 func TestSetClient(t *testing.T) {
 	t.Log("test set client")
 	client := Client{

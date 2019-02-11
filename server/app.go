@@ -50,7 +50,11 @@ func (a *App) Initialize(clientUIPath string, adminUIPath string, randomSeed int
 
 func respondAndLogError(w http.ResponseWriter, errorType string, err error) {
 	w.WriteHeader(500)
-	fmt.Fprint(w, errorType, err)
+	errorString := ""
+	if err != nil {
+		errorString = err.Error()
+	}
+	fmt.Fprint(w, errorType, errorString)
 	log.Println(errorType, ":", err)
 }
 
@@ -87,7 +91,7 @@ func (a *App) getClient(w http.ResponseWriter, r *http.Request) {
 	}
 	client, ok := a.ClientMap[clientID]
 	if !ok {
-		respondAndLogError(w, fmt.Sprint("Not client with id ", clientID), nil)
+		respondAndLogError(w, fmt.Sprint("No client exists with id ", clientID), nil)
 		return
 	}
 	jsonBytes, jsonErr := json.MarshalIndent(client, "", "    ")
