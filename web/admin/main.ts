@@ -10,49 +10,47 @@ type Client = {
 
 var adminId: string = "a" + Math.round(Math.random() * 100000);
 
-var clientList: Client[] = [];
+var clientMap: Record<string, Client> = {};
 var videoElement = document.getElementById("videoElement") as HTMLVideoElement;
 var outputText = document.getElementById("outputText") as HTMLParagraphElement;
 var clientListElement = document.getElementById("clientList") as HTMLUListElement;
 var urlInputElement = document.getElementById("urlInput") as HTMLInputElement;
+var submitButton = document.getElementById("submitButton") as HTMLButtonElement;
 
 const codeReader = new ZXing.BrowserQRCodeReader();
 
 var debounceTimeout: number;
-function setupUrlInput() {
-    var changeHandler = (event) => {
-        clientList.forEach((client) => {
-            client.gotoUrl = urlInputElement.value;
-        });
-
-        clearTimeout(debounceTimeout);
-        if (urlInputElement.value && urlInputElement.value.length > 0) {
-            debounceTimeout = setTimeout(() => {
-                postAllClients();
-            }, 1000);
-        }
-    };
-    urlInputElement.addEventListener("input", changeHandler);
-}
-
-setupUrlInput();
+submitButton.onclick = () => {
+    clearTimeout(debounceTimeout);
+    if (urlInputElement.value && urlInputElement.value.length > 0) {
+        debounceTimeout = setTimeout(() => {
+            outputText.innerHTML = urlInputElement.value;
+            Object.keys(clientMap).forEach((id) => {
+                clientMap[id].gotoUrl = urlInputElement.value;
+            });
+            postAllClients();
+        }, 1000);
+    }
+};
 
 function tryScan() {
     codeReader.getVideoInputDevices().then((devices) => {
         try {
-            const firstDevice = devices[0];
-            var found = false;
+            outputText.textContent = "Number of video devices " + devices.length;
+            const firstDevice = devices[devices.length - 1];
             codeReader.decodeFromInputVideoDevice(firstDevice.deviceId, videoElement).then((result) => {
                 console.log("Result?");
                 var qrText = result.getText();
-                getClientFromServer(qrText, (client) => {
-                    clientList.push(client);
-                    updateClientListElement();
-                    setTimeout(() => {
-                        outputText.textContent = "";
-                        tryScan();
-                    }, 1000);
-                });
+                setTimeout(() => {
+                    outputText.textContent = "";
+                    tryScan();
+                }, 1000);
+                if (!clientMap[qrText]) {
+                    getClientFromServer(qrText, (client) => {
+                        clientMap[client.id] = client;
+                        updateClientListElement();
+                    });
+                }
             });
         } catch (ex) {
             console.error("Something went wrong!", ex);
@@ -61,7 +59,7 @@ function tryScan() {
 }
 
 function updateClientListElement() {
-    clientListElement.innerHTML = clientList.map((client) => `<li>${client.id}</li>`).join("\n");
+    clientListElement.innerHTML = Object.keys(clientMap).map((clientId) => `<li>${clientId}</li>`).join("\n");
 }
 
 function getClientFromServer(id: string, callback: (c: Client) => any) {
@@ -79,7 +77,7 @@ function getClientFromServer(id: string, callback: (c: Client) => any) {
 function postAllClients() {
     var xhttp = new XMLHttpRequest();
     xhttp.open("POST", `/api/clients`, true);
-    xhttp.send(JSON.stringify(clientList));
+    xhttp.send(JSON.stringify(Object.keys(clientMap).map((id) => clientMap[id])));
 }
 
 tryScan();
