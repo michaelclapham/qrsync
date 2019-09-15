@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	qrcode "github.com/skip2/go-qrcode"
 )
@@ -116,6 +117,7 @@ func (a *App) setClient(w http.ResponseWriter, r *http.Request) {
 		respondAndLogError(w, "JSON parsing error", err)
 		return
 	}
+	fmt.Println("set Go to url", inputClient.GoToURL)
 	a.ClientMap[clientID] = inputClient
 	jsonBytes, jsonErr := json.MarshalIndent(a.ClientMap[clientID], "", "    ")
 	if jsonErr != nil {
@@ -155,5 +157,5 @@ func (a *App) initializeRoutes() {
 // ListenOnPort Starts the app listening on the provided port
 func (a *App) ListenOnPort(port int) error {
 	fmt.Println("Starting https server on port ", port)
-	return http.ListenAndServeTLS(fmt.Sprint(":", port), "ssl/server.crt", "ssl/server.key", a.Router)
+	return http.ListenAndServeTLS(fmt.Sprint(":", port), "ssl/server.crt", "ssl/server.key", handlers.CORS()(a.Router))
 }
