@@ -155,7 +155,10 @@ func (a *App) initializeRoutes() {
 }
 
 // ListenOnPort Starts the app listening on the provided port
-func (a *App) ListenOnPort(port int) error {
-	fmt.Println("Starting https server on port ", port)
-	return http.ListenAndServeTLS(fmt.Sprint(":", port), "ssl/server.crt", "ssl/server.key", handlers.CORS()(a.Router))
+func (a *App) ListenOnPort(port int, useSSL bool) error {
+	fmt.Println("Starting server on port ", port, " use ssl ", useSSL)
+	if useSSL {
+		return http.ListenAndServeTLS(fmt.Sprint(":", port), "ssl/server.crt", "ssl/server.key", handlers.CORS()(a.Router))
+	}
+	return http.ListenAndServe(fmt.Sprint(":", port), handlers.CORS()(a.Router))
 }
