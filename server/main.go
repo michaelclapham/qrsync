@@ -8,7 +8,7 @@ import (
 func main() {
 	ssl := flag.Bool("ssl", false, "If true use SSL")
 	defaultPort := 4002
-	if ssl {
+	if *ssl {
 		defaultPort = 4001
 	}
 	port := flag.Int("port", defaultPort, "Port to run server on")
